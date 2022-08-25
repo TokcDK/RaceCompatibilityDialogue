@@ -1,14 +1,14 @@
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.FormKeys.SkyrimSE;
+using Mutagen.Bethesda.Plugins;
+using Mutagen.Bethesda.Plugins.Cache;
+using Mutagen.Bethesda.Plugins.Order;
 using Mutagen.Bethesda.Skyrim;
 using Mutagen.Bethesda.Synthesis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Mutagen.Bethesda.Plugins;
-using Mutagen.Bethesda.Plugins.Cache;
-using Mutagen.Bethesda.Plugins.Order;
 
 namespace RaceCompatibilityDialogue
 {
@@ -69,15 +69,22 @@ namespace RaceCompatibilityDialogue
 
             foreach (var item in LoadOrder.PriorityOrder.DialogResponses().WinningContextOverrides(LinkCache))
             {
-                if (!IsVictim(item.Record)) continue;
+                try
+                {
+                    if (!IsVictim(item.Record)) continue;
 
-                var response = item.GetOrAddAsOverride(PatchMod);
+                    var response = item.GetOrAddAsOverride(PatchMod);
 
-                responseCounter++;
+                    responseCounter++;
 
-                if (item.Parent?.Record is IDialogTopicGetter getter) dialogueSet.Add(getter.AsLink());
+                    if (item.Parent?.Record is IDialogTopicGetter getter) dialogueSet.Add(getter.ToLink());
 
-                AdjustResponses(response);
+                    AdjustResponses(response);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"An error occered whil parse {item}. Error:" + ex + "\n");
+                }
             }
 
             int dialogueCounter = dialogueSet.Count;
@@ -104,7 +111,8 @@ namespace RaceCompatibilityDialogue
             foreach (var condition in conditions)
             {
                 orList.Add(condition);
-                if (!condition.Flags.HasFlag(Condition.Flag.OR)) {
+                if (!condition.Flags.HasFlag(Condition.Flag.OR))
+                {
                     andList.Add(orList);
                     orList = new();
                 }

@@ -6,5 +6,6 @@
   "PreferredAutoVersioning": "LatestTag",
   "RequiredMods": [
     "RaceCompatibility.esm"
-  ]
+  ],
+  "TargetedReleases": []
 }
